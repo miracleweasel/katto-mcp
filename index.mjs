@@ -137,7 +137,7 @@ const TOOLS = [
   },
 ];
 
-const server = new Server({ name: "katto", version: "0.3.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "katto", version: "0.3.1" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
