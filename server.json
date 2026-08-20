@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.miracleweasel/katto-mcp",
+  "title": "Katto",
+  "description": "Turn long videos into scored, captioned 9:16 clips from any MCP client. Submit a YouTube, Twitch, Vimeo, Rumble, Zoom or Dailymotion URL and get ranked vertical clips with captions, transcripts and quota tools.",
+  "version": "0.2.0",
+  "repository": {
+    "url": "https://github.com/miracleweasel/katto-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "katto-mcp",
+      "version": "0.2.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "KATTO_API_KEY",
+          "description": "Katto API key, created at https://katto.tech/dashboard/api-keys",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
