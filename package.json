@@ -1,0 +1,34 @@
+{
+  "name": "katto-mcp",
+  "version": "0.2.0",
+  "description": "MCP server for Katto — turn long videos into scored, captioned 9:16 clips from any MCP client (Claude, Cursor, ...).",
+  "type": "module",
+  "bin": {
+    "katto-mcp": "index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "katto",
+    "video",
+    "clips",
+    "shorts",
+    "ai"
+  ],
+  "homepage": "https://katto.tech/docs/api",
+  "repository": { "type": "git", "url": "git+https://github.com/miracleweasel/katto-mcp.git" },
+  "bugs": { "url": "https://katto.tech/contact" },
+  "author": "Katto (https://katto.tech)",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
