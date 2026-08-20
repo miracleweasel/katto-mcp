@@ -117,9 +117,27 @@ const TOOLS = [
       required: ["id"],
     },
   },
+  {
+    name: "katto_cancel_job",
+    description:
+      "Cancel a still-running job (queued/processing) and refund the monthly video slot. " +
+      "Returns an error if the job already finished, failed, or was cancelled.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string", description: "Job id from katto_create_clip_job." } },
+      required: ["id"],
+    },
+  },
+  {
+    name: "katto_get_account",
+    description:
+      "Get the account behind this key: plan, this key's scopes, and monthly quota " +
+      "{ videos_used, videos_limit, videos_remaining }.",
+    inputSchema: { type: "object", properties: {} },
+  },
 ];
 
-const server = new Server({ name: "katto", version: "0.2.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "katto", version: "0.3.0" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
@@ -148,6 +166,10 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       data = await api("/api/v1/usage");
     } else if (name === "katto_get_transcript") {
       data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}/transcript`);
+    } else if (name === "katto_cancel_job") {
+      data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}`, { method: "DELETE" });
+    } else if (name === "katto_get_account") {
+      data = await api("/api/v1/me");
     } else {
       throw new Error(`Unknown tool: ${name}`);
     }
