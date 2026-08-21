@@ -135,9 +135,39 @@ const TOOLS = [
       "{ videos_used, videos_limit, videos_remaining }.",
     inputSchema: { type: "object", properties: {} },
   },
+  {
+    name: "katto_list_sources",
+    description:
+      "List the video platforms Katto can clip from, with an example URL for each. Use this to confirm a " +
+      "URL is supported before calling katto_create_clip_job.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "katto_list_clip_lengths",
+    description:
+      "List the valid values for the optional config.clipLength on katto_create_clip_job (target clip " +
+      "duration buckets).",
+    inputSchema: { type: "object", properties: {} },
+  },
 ];
 
-const server = new Server({ name: "katto", version: "0.3.1" }, { capabilities: { tools: {} } });
+// Static reference data — returned by the list_* tools without an API call.
+const SOURCES = [
+  { id: 'youtube', example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+  { id: 'twitch', example: 'https://www.twitch.tv/videos/123456789' },
+  { id: 'vimeo', example: 'https://vimeo.com/123456789' },
+  { id: 'rumble', example: 'https://rumble.com/v1a2b3c-title.html' },
+  { id: 'zoom', example: 'https://zoom.us/rec/share/abc123' },
+  { id: 'dailymotion', example: 'https://www.dailymotion.com/video/x8abcde' },
+];
+const CLIP_LENGTHS = [
+  { value: 'lt30', label: 'Under 30 seconds' },
+  { value: '30_60', label: '30 to 60 seconds' },
+  { value: '60_90', label: '60 to 90 seconds' },
+  { value: '90_180', label: '90 to 180 seconds' },
+];
+
+const server = new Server({ name: "katto", version: "0.3.2" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
@@ -170,6 +200,10 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}`, { method: "DELETE" });
     } else if (name === "katto_get_account") {
       data = await api("/api/v1/me");
+    } else if (name === "katto_list_sources") {
+      data = { sources: SOURCES, note: "You can also clip a local file via the REST API (POST /v1/uploads)." };
+    } else if (name === "katto_list_clip_lengths") {
+      data = { clip_lengths: CLIP_LENGTHS };
     } else {
       throw new Error(`Unknown tool: ${name}`);
     }

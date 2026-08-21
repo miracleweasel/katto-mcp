@@ -1,6 +1,6 @@
 {
   "name": "katto-mcp",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "mcpName": "io.github.miracleweasel/katto-mcp",
   "description": "MCP server for Katto — turn long videos into scored, captioned 9:16 clips from any MCP client (Claude, Cursor, ...).",
   "type": "module",
