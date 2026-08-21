@@ -199,6 +199,19 @@ const TOOLS = [
       required: ["id", "rerender_id"],
     },
   },
+  {
+    name: "katto_get_brand_kit",
+    description:
+      "Get your saved brand kits (colors, caption font and position, default layout, watermark url).",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "katto_get_webhook_secret",
+    description:
+      "Get your webhook signing secret and how to verify Katto's signed completion callbacks " +
+      "(HMAC-SHA256 of {timestamp}.{body}). Pass webhook_url on a job to receive them.",
+    inputSchema: { type: "object", properties: {} },
+  },
 ];
 
 // Static reference data — returned by the list_* tools without an API call.
@@ -217,7 +230,7 @@ const CLIP_LENGTHS = [
   { value: '90_180', label: '90 to 180 seconds' },
 ];
 
-const server = new Server({ name: "katto", version: "0.4.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "katto", version: "0.5.0" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
@@ -263,6 +276,10 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}/clips/${encodeURIComponent(args.clip_index)}/rerender`, { method: "POST", body: JSON.stringify({ dub: args.languages || [] }) });
     } else if (name === "katto_get_rerender") {
       data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}/rerenders/${encodeURIComponent(args.rerender_id)}`);
+    } else if (name === "katto_get_brand_kit") {
+      data = await api("/api/v1/brand-kit");
+    } else if (name === "katto_get_webhook_secret") {
+      data = await api("/api/v1/webhook");
     } else {
       throw new Error(`Unknown tool: ${name}`);
     }
