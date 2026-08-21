@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.miracleweasel/katto-mcp",
   "title": "Katto",
-  "description": "AI video clipping MCP server: turn long videos, podcasts and Twitch VODs into scored, captioned 9:16 shorts (15 tools).",
+  "description": "AI video clipping MCP: long videos and podcasts into scored, captioned 9:16 shorts.",
   "version": "0.5.1",
   "repository": {
     "url": "https://github.com/miracleweasel/katto-mcp",
