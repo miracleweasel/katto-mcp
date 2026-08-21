@@ -149,6 +149,56 @@ const TOOLS = [
       "duration buckets).",
     inputSchema: { type: "object", properties: {} },
   },
+  {
+    name: "katto_rerender_clip",
+    description:
+      "Re-render one finished clip with a new reframe layout and/or caption style. Does NOT use video quota. " +
+      "Returns a rerender_id; poll katto_get_rerender for the new clip url.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Job id from katto_create_clip_job." },
+        clip_index: { type: "number", description: "0-based index of the clip to re-render." },
+        layout_mode: {
+          type: "string",
+          enum: ["face_tracking", "wide", "split_screen", "stacked", "passthrough", "grid_3", "grid_4"],
+        },
+        caption_style: { type: "string", description: "A caption style preset name." },
+      },
+      required: ["id", "clip_index"],
+    },
+  },
+  {
+    name: "katto_dub_clip",
+    description:
+      "Re-render one finished clip dubbed into one or more languages (en, es, fr, it, pt, hi, ja, zh). Does " +
+      "NOT use video quota. Returns a rerender_id; poll katto_get_rerender for the result.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Job id." },
+        clip_index: { type: "number", description: "0-based clip index." },
+        languages: {
+          type: "array",
+          items: { type: "string", enum: ["en", "es", "fr", "it", "pt", "hi", "ja", "zh"] },
+        },
+      },
+      required: ["id", "clip_index", "languages"],
+    },
+  },
+  {
+    name: "katto_get_rerender",
+    description:
+      "Poll a re-render started by katto_rerender_clip or katto_dub_clip. Returns { status, clip_url, captions_url }.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Job id." },
+        rerender_id: { type: "string", description: "The rerender_id returned by rerender/dub." },
+      },
+      required: ["id", "rerender_id"],
+    },
+  },
 ];
 
 // Static reference data — returned by the list_* tools without an API call.
@@ -167,7 +217,7 @@ const CLIP_LENGTHS = [
   { value: '90_180', label: '90 to 180 seconds' },
 ];
 
-const server = new Server({ name: "katto", version: "0.3.2" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "katto", version: "0.4.0" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
@@ -204,6 +254,15 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       data = { sources: SOURCES, note: "You can also clip a local file via the REST API (POST /v1/uploads)." };
     } else if (name === "katto_list_clip_lengths") {
       data = { clip_lengths: CLIP_LENGTHS };
+    } else if (name === "katto_rerender_clip") {
+      const b = {};
+      if (args.layout_mode) b.layout_mode = args.layout_mode;
+      if (args.caption_style) b.caption_style = args.caption_style;
+      data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}/clips/${encodeURIComponent(args.clip_index)}/rerender`, { method: "POST", body: JSON.stringify(b) });
+    } else if (name === "katto_dub_clip") {
+      data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}/clips/${encodeURIComponent(args.clip_index)}/rerender`, { method: "POST", body: JSON.stringify({ dub: args.languages || [] }) });
+    } else if (name === "katto_get_rerender") {
+      data = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}/rerenders/${encodeURIComponent(args.rerender_id)}`);
     } else {
       throw new Error(`Unknown tool: ${name}`);
     }
