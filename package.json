@@ -7,6 +7,11 @@
   "bin": {
     "katto-mcp": "index.mjs"
   },
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs",
+    "test": "node --test test/"
+  },
   "files": [
     "index.mjs",
     "README.md",
@@ -32,7 +37,7 @@
     "repurpose-video",
     "video-dubbing"
   ],
-  "homepage": "https://katto.tech/docs/api",
+  "homepage": "https://katto.tech/mcp",
   "repository": { "type": "git", "url": "git+https://github.com/miracleweasel/katto-mcp.git" },
   "bugs": { "url": "https://katto.tech/contact" },
   "author": "Katto (https://katto.tech)",
