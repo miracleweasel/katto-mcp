@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "katto": {
+      "command": "npx",
+      "args": ["-y", "katto-mcp"],
+      "env": {
+        "KATTO_API_KEY": "sk_live_YOUR_KEY_HERE"
+      }
+    }
+  }
+}

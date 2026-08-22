@@ -1,0 +1,27 @@
+# Smithery configuration for katto-mcp
+# https://smithery.ai/docs/build/project-config
+#
+# Local stdio transport (runs the published npm package via npx).
+# For the zero-install hosted transport, point any OAuth 2.1 MCP client at
+# https://mcp.katto.tech/mcp instead (Streamable HTTP, sign in with Katto).
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - kattoApiKey
+    properties:
+      kattoApiKey:
+        type: string
+        title: Katto API Key
+        description: >-
+          Your Katto API key (sk_live_...). Create one at
+          https://katto.tech/dashboard/api-keys. A key can be scoped read-only.
+  exampleConfig:
+    kattoApiKey: sk_live_YOUR_KEY_HERE
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'katto-mcp'],
+      env: { KATTO_API_KEY: config.kattoApiKey }
+    })
