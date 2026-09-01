@@ -3,7 +3,7 @@
   "name": "io.github.miracleweasel/katto-mcp",
   "title": "Katto",
   "description": "AI video clipping MCP: long videos and podcasts into scored, captioned 9:16 shorts.",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "repository": {
     "url": "https://github.com/miracleweasel/katto-mcp",
     "source": "github"
@@ -13,7 +13,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "katto-mcp",
-      "version": "0.5.1",
+      "version": "0.5.4",
       "transport": {
         "type": "stdio"
       },
