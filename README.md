@@ -45,7 +45,7 @@ For Cursor, CI and scripts. Create an API key at **[katto.tech/dashboard/api-key
 
 The hosted endpoint above also accepts `Authorization: Bearer sk_live_...` directly for key-based clients.
 
-## Tools (15)
+## Tools (16)
 
 Clipping:
 - **`katto_create_clip_job(url, config?)`** clip a long video (YouTube, Twitch, Vimeo, Rumble, Zoom, Dailymotion). Returns a job id.
@@ -67,6 +67,7 @@ Account and reference:
 - **`katto_get_webhook_secret()`** your webhook signing secret and how to verify signed callbacks.
 - **`katto_list_sources()`** the video platforms Katto can clip from, with an example url each.
 - **`katto_list_clip_lengths()`** the valid target clip-length buckets.
+- **`katto_list_caption_styles()`** the caption-style presets you can pass as `caption_style` when creating a job or re-rendering a clip.
 
 Jobs draw from your Katto plan's monthly video quota (25 on Creator, 2 on Free), videos up to 90 minutes. The underlying REST API also supports `Idempotency-Key` safe retries, read-only scoped keys, and signed HMAC webhooks. See the [docs](https://katto.tech/docs/api).
 
