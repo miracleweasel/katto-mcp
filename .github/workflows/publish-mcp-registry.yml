@@ -24,4 +24,15 @@ jobs:
         run: mcp-publisher login github-oidc
 
       - name: Publish server.json
-        run: mcp-publisher publish
+        run: |
+          set +e
+          OUT=$(mcp-publisher publish 2>&1); CODE=$?
+          echo "$OUT"
+          if [ $CODE -eq 0 ]; then exit 0; fi
+          # A version already published manually (e.g. via the local publisher)
+          # is not an error — the registry already has it. Only fail on anything else.
+          if echo "$OUT" | grep -qi "duplicate version"; then
+            echo "::notice::Version already live in the registry — nothing to publish."
+            exit 0
+          fi
+          exit $CODE
