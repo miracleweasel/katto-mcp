@@ -15,12 +15,19 @@ import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprot
 const API_URL = (process.env.KATTO_API_URL || "https://katto.tech").replace(/\/$/, "");
 const API_KEY = process.env.KATTO_API_KEY;
 
+// NOTE: we intentionally do NOT exit when the key is missing. The server must be
+// able to start and answer tools/list WITHOUT a key so that MCP directory/aggregator
+// sandboxes (Glama, mcp.so, ...) can enumerate the tools — otherwise they show
+// "0 tools". Nothing runs unauthenticated: the key is enforced at call time in api()
+// below, so tools/list is public but every tool CALL still requires a valid key.
 if (!API_KEY) {
-  console.error("[katto-mcp] KATTO_API_KEY is required. Create one at https://katto.tech/dashboard/api-keys");
-  process.exit(1);
+  console.error("[katto-mcp] No KATTO_API_KEY set — tools/list works, but calling any tool requires a key. Create one at https://katto.tech/dashboard/api-keys");
 }
 
 async function api(path, init = {}) {
+  if (!API_KEY) {
+    throw new Error("KATTO_API_KEY is required to call Katto tools. Create one at https://katto.tech/dashboard/api-keys and set it in your MCP client config.");
+  }
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
@@ -45,7 +52,7 @@ const TOOLS = [
     name: "katto_create_clip_job",
     description:
       "Submit a long video (YouTube, Twitch, Vimeo, Rumble, Zoom, Dailymotion) to Katto. Returns a job id; " +
-      "the clips finish asynchronously in ~5-7 min. Poll katto_get_job with the id until status is 'completed'.",
+      "the clips finish asynchronously. Poll katto_get_job with the id until status is 'completed'.",
     inputSchema: {
       type: "object",
       properties: {
@@ -146,7 +153,14 @@ const TOOLS = [
     name: "katto_list_clip_lengths",
     description:
       "List the valid values for the optional config.clipLength on katto_create_clip_job (target clip " +
-      "duration buckets).",
+      "duration buckets). Note: clipLength is fixed at job creation and cannot be changed by re-render.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "katto_list_caption_styles",
+    description:
+      "List the valid caption_style preset names for katto_rerender_clip (e.g. 'hormozi' for bold " +
+      "word-by-word highlight). Call this before re-rendering so you pass a real preset, not a guess.",
     inputSchema: { type: "object", properties: {} },
   },
   {
@@ -163,7 +177,12 @@ const TOOLS = [
           type: "string",
           enum: ["face_tracking", "wide", "split_screen", "stacked", "passthrough", "grid_3", "grid_4"],
         },
-        caption_style: { type: "string", description: "A caption style preset name." },
+        caption_style: {
+          type: "string",
+          // Keep in sync with CAPTION_STYLES below (katto_list_caption_styles).
+          enum: ["default", "hormozi", "yellowPop", "redAlert", "skyline", "bubblegum", "aqua", "violet", "headline", "centerPop", "topLime", "impactMax", "bebasGold", "robotoBold", "montserratClean", "poppinsSoft", "robotoDoc", "broadcast", "wideClean", "mono", "bebasWhite", "rainbow", "multicolor"],
+          description: "A caption style preset name. See katto_list_caption_styles for the labels.",
+        },
       },
       required: ["id", "clip_index"],
     },
@@ -214,6 +233,61 @@ const TOOLS = [
   },
 ];
 
+// Tool behaviour hints (MCP annotations). Required by the Claude Connectors
+// Directory review: every tool must declare read-only vs write, plus
+// destructive / idempotent / open-world semantics, so a client can gate calls.
+// All four hints are declared on every tool (explicit > omitted for reviewers).
+// Read tools: read-only, non-destructive, idempotent, closed-world. Writes flip
+// readOnlyHint. create_clip_job fetches a user URL (openWorld) + spends 1 quota
+// slot (not idempotent). rerender/dub each spawn a NEW render (not idempotent —
+// unsafe to blindly retry). cancel_job is the only destructive tool.
+const ANNOTATIONS = {
+  katto_create_clip_job: { title: "Create clip job", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+  katto_get_job: { title: "Get job status & clips", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_list_jobs: { title: "List jobs", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_get_clips: { title: "Get finished clips", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_get_usage: { title: "Get plan & quota", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_get_transcript: { title: "Get transcript", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_cancel_job: { title: "Cancel job & refund slot", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  katto_get_account: { title: "Get account", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_list_sources: { title: "List supported sources", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_list_clip_lengths: { title: "List clip-length options", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_list_caption_styles: { title: "List caption styles", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_rerender_clip: { title: "Re-render a clip", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  katto_dub_clip: { title: "Dub a clip", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  katto_get_rerender: { title: "Poll a re-render", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_get_brand_kit: { title: "Get brand kits", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  katto_get_webhook_secret: { title: "Get webhook signing secret", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+};
+
+// Agent-facing descriptions (when to call, returns, errors, quota cost). Served
+// on tools/list — identical across all sources, enriching the terser inline text.
+const DESCRIPTIONS = {
+  katto_create_clip_job: "Submit a long video (YouTube, Twitch, Vimeo, Rumble, Zoom, Dailymotion) for clipping. Consumes 1 video from your monthly quota — check katto_get_usage first. Clips are produced asynchronously; returns a job id, then poll katto_get_job until status is 'completed'. Fails if the URL is unsupported or the video is over 90 minutes.",
+  katto_get_job: "Read-only. Get the status, progress and clips of a job by id. Clips come ranked by virality score (0-100, highest first; ties broken by clip_index). Each clip is { url, captions_url, title, score, clip_index, hd }: when status is 'completed' every url is a finished, downloadable clip; hd is true once the 1080p high-quality render is ready. hd=false does NOT mean broken — the url already works, the 1080p is just still rendering in the background (and stays the standard render on the free plan). The job-level hd_ready flag turns true once every clip is hd, i.e. the URLs are final and won't be swapped again (status='completed' fires earlier). Returns 404 for an unknown id.",
+  katto_list_jobs: "Read-only. List your recent jobs, newest first. Paginate with 'cursor' (pass the previous next_cursor); optional 'status' filter. Returns { jobs: [{id, status, source, created_at, completed_at}], next_cursor }.",
+  katto_get_clips: "Read-only convenience: the clips of a job as { url, captions_url, title, score, clip_index, hd }, ranked by score (highest first). hd=true means the 1080p render is ready; hd=false means the url is the standard render (HD still finishing, or the free plan). Empty until the first clip is ready.",
+  katto_get_usage: "Read-only. Your current plan and monthly video quota: { plan, videos_used, videos_limit, videos_remaining }. Call before katto_create_clip_job to confirm remaining quota.",
+  katto_get_transcript: "Read-only. The transcript of a completed job as timestamped segments [{ start, end, text }]. Returns 404 while the job is still processing.",
+  katto_cancel_job: "Cancel a still-running job (queued/processing) and refund the video back to your monthly quota. Safe to retry (idempotent). Returns an error if the job already finished, failed, or was cancelled.",
+  katto_get_account: "Read-only. The account behind this key: plan, this key's scopes (read/write), and monthly quota { videos_used, videos_limit, videos_remaining }.",
+  katto_list_sources: "Read-only. The video platforms Katto can clip from, each with an example URL. Use it to confirm a URL is supported before calling katto_create_clip_job.",
+  katto_list_clip_lengths: "Read-only. The valid values for the optional config.clipLength on katto_create_clip_job (target clip-duration buckets). Note: clipLength is fixed at creation and cannot be changed by re-render.",
+  katto_list_caption_styles: "Read-only. The valid caption_style preset names for katto_rerender_clip (id + label), e.g. 'hormozi' for bold word-by-word highlight. Call this before re-rendering so you pass a real preset instead of guessing.",
+  katto_rerender_clip: "Re-render one already-finished clip with a new reframe layout and/or caption style (get valid caption_style values from katto_list_caption_styles). Free — does NOT use video quota. Each call starts a new render (not idempotent); the original clip is kept. Returns a rerender_id; poll katto_get_rerender for the new clip url.",
+  katto_dub_clip: "Re-render one finished clip dubbed into one or more of 8 languages (en, es, fr, it, pt, hi, ja, zh). Free — does NOT use video quota. Each call starts a new render (not idempotent). Returns a rerender_id; poll katto_get_rerender for the result.",
+  katto_get_rerender: "Read-only. Poll a re-render started by katto_rerender_clip or katto_dub_clip. Returns { status, clip_url, captions_url } — clip_url is null until status is 'completed'.",
+  katto_get_brand_kit: "Read-only. Your saved brand kits (colors, caption font and position, default layout, watermark url).",
+  katto_get_webhook_secret: "Read-only. Returns your webhook signing SECRET — treat it as a credential (do not display or log it) — plus how to verify Katto's signed completion callbacks (HMAC-SHA256 of {timestamp}.{body}). Pass webhook_url on a job to receive them.",
+};
+
+// TOOLS enriched with agent descriptions + annotations — served on tools/list.
+const TOOLS_LISTED = TOOLS.map((t) => ({
+  ...t,
+  description: DESCRIPTIONS[t.name] ?? t.description,
+  ...(ANNOTATIONS[t.name] ? { annotations: ANNOTATIONS[t.name] } : {}),
+}));
+
 // Static reference data — returned by the list_* tools without an API call.
 const SOURCES = [
   { id: 'youtube', example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
@@ -229,10 +303,37 @@ const CLIP_LENGTHS = [
   { value: '60_90', label: '60 to 90 seconds' },
   { value: '90_180', label: '90 to 180 seconds' },
 ];
+// Valid values for caption_style on katto_rerender_clip. Mirrors the editor's
+// named presets. Keep in sync with mcp-worker/src/index.js CAPTION_STYLES.
+const CAPTION_STYLES = [
+  { value: 'default', label: 'Default' },
+  { value: 'hormozi', label: 'Hormozi (bold word-by-word highlight)' },
+  { value: 'yellowPop', label: 'Yellow Pop' },
+  { value: 'redAlert', label: 'Red Alert' },
+  { value: 'skyline', label: 'Skyline' },
+  { value: 'bubblegum', label: 'Bubblegum' },
+  { value: 'aqua', label: 'Aqua' },
+  { value: 'violet', label: 'Violet' },
+  { value: 'headline', label: 'Headline' },
+  { value: 'centerPop', label: 'Center Pop' },
+  { value: 'topLime', label: 'Top Lime' },
+  { value: 'impactMax', label: 'Impact Max' },
+  { value: 'bebasGold', label: 'Bebas Gold' },
+  { value: 'robotoBold', label: 'Roboto Bold' },
+  { value: 'montserratClean', label: 'Montserrat' },
+  { value: 'poppinsSoft', label: 'Poppins' },
+  { value: 'robotoDoc', label: 'Roboto Doc' },
+  { value: 'broadcast', label: 'Broadcast' },
+  { value: 'wideClean', label: 'Wide Clean' },
+  { value: 'mono', label: 'Mono' },
+  { value: 'bebasWhite', label: 'Bebas' },
+  { value: 'rainbow', label: 'Rainbow (per-word colour cycle)' },
+  { value: 'multicolor', label: 'Multicolor' },
+];
 
-const server = new Server({ name: "katto", version: "0.5.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "katto", version: "0.5.5" }, { capabilities: { tools: {} } });
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS_LISTED }));
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args = {} } = req.params;
@@ -267,6 +368,8 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       data = { sources: SOURCES, note: "You can also clip a local file via the REST API (POST /v1/uploads)." };
     } else if (name === "katto_list_clip_lengths") {
       data = { clip_lengths: CLIP_LENGTHS };
+    } else if (name === "katto_list_caption_styles") {
+      data = { caption_styles: CAPTION_STYLES };
     } else if (name === "katto_rerender_clip") {
       const b = {};
       if (args.layout_mode) b.layout_mode = args.layout_mode;
