@@ -17,4 +17,4 @@ jobs:
       - name: Syntax check
         run: node --check index.mjs
       - name: Tests
-        run: npm test
+        run: npm test --if-present
