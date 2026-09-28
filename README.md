@@ -7,7 +7,7 @@
 
 **The AI video clipping MCP server.** Turn long videos into scored, captioned, vertical 9:16 short clips from any MCP client (Claude, Cursor, Claude Code, ChatGPT, VS Code, and other conformant clients). Drop in a YouTube link, a podcast, or a Twitch VOD and get publish-ready shorts back through natural conversation.
 
-Powered by [Katto](https://katto.tech), an AI video clipper that turns long-form video (podcasts, interviews, streams, webinars) into short-form clips for TikTok, Reels and YouTube Shorts. Katto is a flat-priced, no-credits alternative to tools like OpusClip: one 25-video quota covers videos up to 90 minutes each, with the API and MCP included on **every plan, including the free one** (not gated behind a paid or enterprise tier).
+Powered by [Katto](https://katto.tech), an AI video clipper that turns long-form video (podcasts, interviews, streams, webinars) into short-form clips for TikTok, Reels and YouTube Shorts. Katto is a flat-priced, no-credits alternative to tools like OpusClip: the Creator plan's 25-video monthly quota covers videos up to 90 minutes each. API and MCP access is included on **every plan, including the free one** (2 videos/month), not gated behind a paid or enterprise tier.
 
 ## What it does
 
