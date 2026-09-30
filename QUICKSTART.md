@@ -31,5 +31,5 @@ curl -X POST https://katto.tech/api/v1/jobs \
 ```
 
 What comes back: finished clips (MP4 + SRT captions + a title and a 0–100 score), 9:16,
-word-timed captions, reframed. Re-render the layout/caption style or dub into 8 languages
+word-timed captions, reframed. Re-render the layout/caption style or dub into 19 languages
 for free (no quota). Full reference: https://katto.tech/docs/api

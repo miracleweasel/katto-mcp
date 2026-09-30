@@ -6,13 +6,13 @@
     "url": "https://github.com/miracleweasel/katto-mcp",
     "source": "github"
   },
-  "version": "0.5.6",
+  "version": "0.5.9",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "katto-mcp",
-      "version": "0.5.6",
+      "version": "0.5.9",
       "transport": {
         "type": "stdio"
       },

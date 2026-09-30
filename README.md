@@ -108,7 +108,7 @@ Full docs: **[katto.tech/docs/api](https://katto.tech/docs/api)**
 
 - npm: [katto-mcp](https://www.npmjs.com/package/katto-mcp)
 - GitHub: [miracleweasel/katto-mcp](https://github.com/miracleweasel/katto-mcp)
-- [mcp.so](https://mcp.so/servers/katto) · [Smithery](https://smithery.ai/server/@dev-4lue/katto-mcp) · [Glama](https://glama.ai/mcp/servers/@miracleweasel/katto-mcp)
+- [mcp.so](https://mcp.so/servers/katto) · [Smithery](https://smithery.ai/servers/dev-4lue/katto-mcp) · [Glama](https://glama.ai/mcp/servers/@miracleweasel/katto-mcp)
 - Official MCP Registry: `io.github.miracleweasel/katto-mcp`
 
 ## Public Discovery

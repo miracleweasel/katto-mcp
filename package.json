@@ -1,6 +1,6 @@
 {
   "name": "katto-mcp",
-  "version": "0.5.6",
+  "version": "0.5.9",
   "mcpName": "io.github.miracleweasel/katto-mcp",
   "description": "AI video clipping MCP server: turn long videos, podcasts and Twitch VODs into scored, captioned 9:16 shorts from Claude, Cursor, ChatGPT and any MCP client.",
   "type": "module",
@@ -8,7 +8,7 @@
     "katto-mcp": "index.mjs"
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "check-drift": "node check-tool-drift.mjs"
   },
   "files": [
     "index.mjs",
@@ -38,8 +38,13 @@
     "video-dubbing"
   ],
   "homepage": "https://katto.tech/docs/api",
-  "repository": { "type": "git", "url": "git+https://github.com/miracleweasel/katto-mcp.git" },
-  "bugs": { "url": "https://katto.tech/contact" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miracleweasel/katto-mcp.git"
+  },
+  "bugs": {
+    "url": "https://katto.tech/contact"
+  },
   "author": "Katto (https://katto.tech)",
   "license": "MIT",
   "dependencies": {

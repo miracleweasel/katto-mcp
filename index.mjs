@@ -190,7 +190,7 @@ const TOOLS = [
   {
     name: "katto_dub_clip",
     description:
-      "Re-render one finished clip dubbed into one or more languages (en, es, fr, it, pt, hi, ja, zh). Does " +
+      "Re-render one finished clip dubbed into one or more of 19 languages (en, es, fr, it, pt, hi, ja, zh, de, ko, nl, pl, ru, tr, id, vi, th, uk, ar). Does " +
       "NOT use video quota. Returns a rerender_id; poll katto_get_rerender for the result.",
     inputSchema: {
       type: "object",
@@ -199,7 +199,7 @@ const TOOLS = [
         clip_index: { type: "number", description: "0-based clip index." },
         languages: {
           type: "array",
-          items: { type: "string", enum: ["en", "es", "fr", "it", "pt", "hi", "ja", "zh"] },
+          items: { type: "string", enum: ["en", "es", "fr", "it", "pt", "hi", "ja", "zh", "de", "ko", "nl", "pl", "ru", "tr", "id", "vi", "th", "uk", "ar"] },
         },
       },
       required: ["id", "clip_index", "languages"],
@@ -208,7 +208,7 @@ const TOOLS = [
   {
     name: "katto_get_rerender",
     description:
-      "Poll a re-render started by katto_rerender_clip or katto_dub_clip. Returns { status, clip_url, captions_url }.",
+      "Poll a re-render started by katto_rerender_clip or katto_dub_clip. Returns { status, clip_url, captions_url, dub_urls } — dub_urls is { lang: url } and is where a DUB lands (clip_url stays the undubbed re-render), null otherwise.",
     inputSchema: {
       type: "object",
       properties: {
@@ -275,8 +275,8 @@ const DESCRIPTIONS = {
   katto_list_clip_lengths: "Read-only. The valid values for the optional config.clipLength on katto_create_clip_job (target clip-duration buckets). Note: clipLength is fixed at creation and cannot be changed by re-render.",
   katto_list_caption_styles: "Read-only. The valid caption_style preset names for katto_rerender_clip (id + label), e.g. 'hormozi' for bold word-by-word highlight. Call this before re-rendering so you pass a real preset instead of guessing.",
   katto_rerender_clip: "Re-render one already-finished clip with a new reframe layout and/or caption style (get valid caption_style values from katto_list_caption_styles). Free — does NOT use video quota. Each call starts a new render (not idempotent); the original clip is kept. Returns a rerender_id; poll katto_get_rerender for the new clip url.",
-  katto_dub_clip: "Re-render one finished clip dubbed into one or more of 8 languages (en, es, fr, it, pt, hi, ja, zh). Free — does NOT use video quota. Each call starts a new render (not idempotent). Returns a rerender_id; poll katto_get_rerender for the result.",
-  katto_get_rerender: "Read-only. Poll a re-render started by katto_rerender_clip or katto_dub_clip. Returns { status, clip_url, captions_url } — clip_url is null until status is 'completed'.",
+  katto_dub_clip: "Re-render one finished clip dubbed into one or more of 19 languages (en, es, fr, it, pt, hi, ja, zh, de, ko, nl, pl, ru, tr, id, vi, th, uk, ar). Creator feature (requires an active subscription); does NOT use your monthly video quota. Each call starts a new render (not idempotent). Returns a rerender_id; poll katto_get_rerender for the result.",
+  katto_get_rerender: "Read-only. Poll a re-render started by katto_rerender_clip or katto_dub_clip. Returns { status, clip_url, captions_url, dub_urls } — dub_urls is { lang: url } and is where a DUB lands (clip_url stays the undubbed re-render), null otherwise — clip_url is null until status is 'completed'.",
   katto_get_brand_kit: "Read-only. Your saved brand kits (colors, caption font and position, default layout, watermark url).",
   katto_get_webhook_secret: "Read-only. Returns your webhook signing SECRET — treat it as a credential (do not display or log it) — plus how to verify Katto's signed completion callbacks (HMAC-SHA256 of {timestamp}.{body}). Pass webhook_url on a job to receive them.",
 };
@@ -331,7 +331,7 @@ const CAPTION_STYLES = [
   { value: 'multicolor', label: 'Multicolor' },
 ];
 
-const server = new Server({ name: "katto", version: "0.5.5" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "katto", version: "0.5.8" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS_LISTED }));
 
@@ -355,7 +355,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       data = await api(`/api/v1/jobs${q ? `?${q}` : ""}`);
     } else if (name === "katto_get_clips") {
       const job = await api(`/api/v1/jobs/${encodeURIComponent(args.id)}`);
-      data = { id: job.id, status: job.status, clips: job.clips || [] };
+      data = { id: job.id, status: job.status, clips: job.clips || [], dropped_clip_indices: job.dropped_clip_indices || [], dropped_clips: job.dropped_clips || [] };
     } else if (name === "katto_get_usage") {
       data = await api("/api/v1/usage");
     } else if (name === "katto_get_transcript") {

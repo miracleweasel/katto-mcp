@@ -23,7 +23,7 @@ the local machine.
 
 ## Editing — never counts against quota
 - `katto_rerender_clip({ id, clip_index, layout_mode?, caption_style? })`, then `katto_get_rerender(...)`.
-- `katto_dub_clip({ id, clip_index, languages })` → dub into any of **8 languages**: en, es, fr, it, pt, hi, ja, zh.
+- `katto_dub_clip({ id, clip_index, languages })` → dub into any of **19 languages**: en, es, fr, it, pt, hi, ja, zh, de, ko, nl, pl, ru, tr, id, vi, th, uk, ar.
 
 ## Reference / account
 - `katto_get_usage`, `katto_get_account` — remaining quota, plan, this key's scopes.
@@ -32,8 +32,8 @@ the local machine.
 
 ## Rules of the road
 - **One quota**, shared with the app / API / CLI: Creator = 25 videos/month, ≤90 min each; Free = 2/month.
-  Re-renders and dubs are free.
-- Captions: **99 languages** (word-timed in 41, sentence-level in the rest). Dubbing: **8**. Publish: **7 platforms**.
+  Re-renders are free; dubbing is a Creator feature.
+- Captions: **99 languages** (word-timed in 41, sentence-level in the rest). Dubbing: **19**. Publish: **7 platforms**.
 - **Don't invent timings.** The only measured figure is ~5 minutes for 8 clips on a 20-minute video;
   longer sources take longer. Say that, not a number you'd like.
 
