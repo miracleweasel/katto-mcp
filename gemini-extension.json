@@ -1,0 +1,11 @@
+{
+  "name": "katto",
+  "version": "0.6.1",
+  "description": "Katto's official MCP server: turn long videos (YouTube, Twitch, Kick, uploads…) into scored, captioned 9:16 clips, then re-render, translate captions or publish. 29 tools, hosted, OAuth sign-in.",
+  "mcpServers": {
+    "katto": {
+      "httpUrl": "https://mcp.katto.tech/mcp"
+    }
+  },
+  "contextFileName": "GEMINI.md"
+}
