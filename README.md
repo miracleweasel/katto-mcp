@@ -63,6 +63,14 @@ claude mcp add --transport http katto https://mcp.katto.tech/mcp
 
 **ChatGPT** (Developer mode / connectors) — add a custom connector with URL `https://mcp.katto.tech/mcp`.
 
+**Gemini CLI** (extension, hosted, OAuth):
+```bash
+gemini extensions install https://github.com/miracleweasel/katto-mcp
+```
+then `/mcp auth katto` to sign in. The extension (`gemini-extension.json` + `GEMINI.md`) points at the hosted endpoint; no key on disk. Manual alternative in `~/.gemini/settings.json`: `"mcpServers": { "katto": { "httpUrl": "https://mcp.katto.tech/mcp" } }`.
+
+**Antigravity CLI** (`agy`, Gemini CLI's successor) — add the hosted server to `~/.gemini/config/mcp_config.json`: `"mcpServers": { "katto": { "serverUrl": "https://mcp.katto.tech/mcp" } }`, or run `agy plugin import gemini` after installing the Gemini CLI extension above.
+
 ## Tools
 
 **29 tools**, in five groups: nine for clipping, eight for editing, four for publishing, one for feedback, seven for account and reference.
