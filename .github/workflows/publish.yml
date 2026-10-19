@@ -1,0 +1,118 @@
+# Publishes katto-mcp to npm WITH provenance, then server.json to the MCP Registry.
+#
+# Why: VerifyMCP (and `npm audit signatures`) look for a Sigstore build attestation
+# that binds the npm tarball to a commit + CI run of THIS repository. A local
+# `npm publish` cannot produce one, so every release must go through here.
+# package.json sets publishConfig.provenance=true, which makes a local publish
+# fail on purpose (escape hatch, if ever needed: `npm publish --provenance=false`).
+#
+# Auth, pick ONE (founder setup, done once):
+#   A) npm Trusted Publishing (recommended, no secret to rotate):
+#      npmjs.com > katto-mcp > Settings > Trusted Publisher > GitHub Actions
+#      owner=miracleweasel  repo=katto-mcp  workflow=publish.yml  (environment: leave empty)
+#   B) Token: gh secret set NPM_TOKEN --repo miracleweasel/katto-mcp
+#      (granular token, "Read and write" on katto-mcp only, bypass 2FA for automation)
+#
+# Trigger: publish a GitHub Release whose tag is v<package.json version>,
+#   gh release create v0.6.1 --repo miracleweasel/katto-mcp --generate-notes
+# or run it by hand from the Actions tab (workflow_dispatch) on main.
+
+name: Publish (npm with provenance + MCP Registry)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # Sigstore provenance + npm Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "24" # ships npm 11.x (Trusted Publishing needs npm >= 11.5.1)
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Guard - versions agree and are not already on npm
+        env:
+          REF_TYPE: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          V=$(node -p "require('./package.json').version")
+          echo "package.json version: $V"
+          if [ "$REF_TYPE" = "release" ] && [ "$TAG" != "v$V" ]; then
+            echo "::error::Release tag '$TAG' does not match package.json version 'v$V'."
+            exit 1
+          fi
+          if npm view "katto-mcp@$V" version >/dev/null 2>&1; then
+            echo "::error::katto-mcp@$V is already on npm. Bump the version (package.json, server.json x2, index.mjs) first."
+            exit 1
+          fi
+          # The repository field must point at this repo, or the provenance is not repo-bound.
+          REPO_URL=$(node -p "require('./package.json').repository.url")
+          case "$REPO_URL" in
+            *"github.com/${GITHUB_REPOSITORY}.git"|*"github.com/${GITHUB_REPOSITORY}") ;;
+            *) echo "::error::package.json repository.url ($REPO_URL) != ${GITHUB_REPOSITORY}"; exit 1 ;;
+          esac
+
+      - name: Syntax check + smoke tests (no install, no build)
+        run: |
+          node --check index.mjs
+          npm test
+
+      - name: Show what will be published
+        run: npm pack --dry-run
+
+      - name: Publish to npm with provenance
+        env:
+          # Empty when Trusted Publishing is used: npm then authenticates via OIDC.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+  mcp-registry:
+    needs: npm # the registry validates that the npm version (with mcpName) exists
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC login to the MCP Registry
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          sudo mv mcp-publisher /usr/local/bin/
+
+      - name: Authenticate (GitHub OIDC)
+        run: mcp-publisher login github-oidc
+
+      - name: Publish server.json
+        run: |
+          set +e
+          OUT=$(mcp-publisher publish 2>&1); CODE=$?
+          echo "$OUT"
+          if [ $CODE -eq 0 ]; then exit 0; fi
+          if echo "$OUT" | grep -qi "duplicate version"; then
+            echo "::notice::Version already live in the registry - nothing to publish."
+            exit 0
+          fi
+          exit $CODE

@@ -6,13 +6,13 @@
     "url": "https://github.com/miracleweasel/katto-mcp",
     "source": "github"
   },
-  "version": "0.5.9",
+  "version": "0.6.1",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "katto-mcp",
-      "version": "0.5.9",
+      "version": "0.6.1",
       "transport": {
         "type": "stdio"
       },
@@ -24,6 +24,13 @@
           "name": "KATTO_API_KEY"
         }
       ]
+    }
+  ],
+  "websiteUrl": "https://katto.tech/mcp",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.katto.tech/mcp"
     }
   ]
 }

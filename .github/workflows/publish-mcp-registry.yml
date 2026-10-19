@@ -1,9 +1,11 @@
-name: Publish to MCP Registry
+name: Publish to MCP Registry (manual re-run only)
 
+# Releases now go through publish.yml, which publishes to npm (with provenance)
+# and THEN to the MCP Registry. Keeping a `release` trigger here too would race
+# publish.yml: the registry rejects a server.json whose npm version is not live yet.
+# Use this only to re-push server.json for a version already on npm.
 on:
   workflow_dispatch:
-  release:
-    types: [published]
 
 permissions:
   contents: read
