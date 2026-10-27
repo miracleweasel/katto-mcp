@@ -15,7 +15,7 @@ Ask your agent something like *"clip the best moments from this podcast and refr
 
 - find the strongest 30 to 90 second moments in a long video and score each clip 0 to 100 on Hook, Flow, Value and Trend,
 - reframe to vertical 9:16 with face tracking, split-screen for two speakers, and stacked layouts for gaming,
-- burn animated captions (auto-captioned in 99 languages via Whisper large-v3; word-by-word timing in 41 of them, sentence-level in the rest) and optionally dub into 19 languages,
+- burn animated captions (auto-captioned in 99 languages via Whisper large-v3; word-by-word timing in 41 of them, sentence-level in the rest) and optionally dub into 105 languages,
 - and hand back publish-ready MP4 files plus SRT caption urls.
 
 Typical uses: repurpose a YouTube video into shorts, turn a podcast episode into clips, cut highlights from a Twitch VOD, or convert a long interview into vertical social posts.
@@ -88,7 +88,7 @@ Clipping:
 
 Editing (no quota):
 - **`katto_rerender_clip(id, clip_index, layout_mode?, caption_style?)`** re-render one clip with a new reframe layout or caption style.
-- **`katto_dub_clip(id, clip_index, languages)`** re-render a clip dubbed into one or more of 19 languages.
+- **`katto_dub_clip(id, clip_index, languages)`** re-render a clip dubbed into one or more of 105 languages.
 - **`katto_get_rerender(id, rerender_id)`** poll a re-render for the new versioned clip url.
 - **`katto_translate_captions(id, clip_index, language)`** re-render a clip with its captions translated into one of 19 languages (Creator).
 - **`katto_retitle_clip(id, clip_index, style? | title?)`** AI-regenerate a clip's title, or save your own.
