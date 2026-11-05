@@ -61,7 +61,7 @@ claude mcp add --transport http katto https://mcp.katto.tech/mcp
 
 **VS Code** (MCP extension) — add the same `npx` block to your MCP settings, or point it at the hosted URL if your client supports remote OAuth servers.
 
-**ChatGPT** (Developer mode / connectors) — add a custom connector with URL `https://mcp.katto.tech/mcp`.
+**ChatGPT** — go to [chatgpt.com/plugins](https://chatgpt.com/plugins), click **+**, choose **Add custom MCP server**, paste `https://mcp.katto.tech/mcp` with OAuth, then type `@` in a new chat and pick Katto.
 
 **Gemini CLI** (extension, hosted, OAuth):
 ```bash
@@ -135,7 +135,7 @@ Full docs: **[katto.tech/docs/api](https://katto.tech/docs/api)**
 
 - npm: [katto-mcp](https://www.npmjs.com/package/katto-mcp)
 - GitHub: [miracleweasel/katto-mcp](https://github.com/miracleweasel/katto-mcp)
-- [mcp.so](https://mcp.so/servers/katto) · [Smithery](https://smithery.ai/servers/dev-4lue/katto-mcp) · [Glama](https://glama.ai/mcp/servers/@miracleweasel/katto-mcp)
+- [mcp.so](https://mcp.so/servers/katto) · [Smithery](https://smithery.ai/servers/dev-4lue/katto-mcp) · [Glama](https://glama.ai/mcp/servers/@miracleweasel/katto-mcp) · [mcpservers.org](https://mcpservers.org/servers/katto-mcp)
 - Official MCP Registry: `io.github.miracleweasel/katto-mcp`
 
 ## Public Discovery
