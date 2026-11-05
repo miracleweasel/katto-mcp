@@ -33,6 +33,9 @@ async function api(path, init = {}) {
     headers: {
       Authorization: `Bearer ${API_KEY}`,
       "Content-Type": "application/json",
+      // Tells the API the call comes from an MCP server: a job created here is
+      // recorded as jobs.origin = 'mcp', not 'api'. Same value in the 3 MCP sources.
+      "X-Katto-Client": "mcp",
       ...(init.headers || {}),
     },
   });
@@ -194,7 +197,7 @@ const TOOLS = [
   {
     name: "katto_dub_clip",
     description:
-      "Re-render one finished clip dubbed into one or more of 19 languages (en, es, fr, it, pt, hi, ja, zh, de, ko, nl, pl, ru, tr, id, vi, th, uk, ar). Does " +
+      "Re-render one finished clip dubbed into one or more of 105 languages (ISO 639-1 codes such as en, es, fr, pt, hi, bn, ta, te, ur, ja, zh, ko, ar, sw; 86 of them in beta). Does " +
       "NOT use video quota. Returns a rerender_id; poll katto_get_rerender for the result.",
     inputSchema: {
       type: "object",
@@ -203,7 +206,7 @@ const TOOLS = [
         clip_index: { type: "number", description: "0-based clip index." },
         languages: {
           type: "array",
-          description: "Target languages for the dub, as ISO 639-1 codes. Nineteen are available; the clip keeps its original audio for any language not listed here.",
+          description: "Target languages for the dub, as ISO 639-1 codes. 105 are available, 86 of them in beta; the clip keeps its original audio for any language not listed here.",
           items: { type: "string", enum: ["en", "es", "fr", "it", "pt", "hi", "ja", "zh", "de", "ko", "nl", "pl", "ru", "tr", "id", "vi", "th", "uk", "ar"] },
         },
       },
@@ -470,7 +473,7 @@ const ANNOTATIONS = {
   katto_more_clips: { title: "Render more clips from the reserve", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   katto_upload_video: { title: "Upload a local video", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   katto_translate_captions: { title: "Translate a clip's captions", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
-  katto_retitle_clip: { title: "Retitle a clip", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  katto_retitle_clip: { title: "Retitle a clip", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
   katto_publish_clip: { title: "Publish a clip to social media", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
   katto_list_connected_accounts: { title: "List connected social accounts", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   katto_list_scheduled_posts: { title: "List scheduled posts", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -484,7 +487,7 @@ const ANNOTATIONS = {
 // Agent-facing descriptions (when to call, returns, errors, quota cost). Served
 // on tools/list — identical across all sources, enriching the terser inline text.
 const DESCRIPTIONS = {
-  katto_create_clip_job: "Submit a long video for clipping, either by public link in url (YouTube, Twitch, Kick, Vimeo, Zoom, Google Drive, Dropbox, Loom, LinkedIn, Facebook, Rumble, Dailymotion, Medal.tv, or a direct https link to a video file; Google Drive and Dropbox links must be shared publicly) or, for a local file, by upload_id after katto_upload_video and the PUT of the file. Pass exactly one of url or upload_id. Consumes 1 video from your monthly quota — check katto_get_usage first. Clips are produced asynchronously; returns a job id, then poll katto_get_job every 30-60 s until status is 'completed', or pass webhook_url to be notified (url jobs only). Pass idempotency_key when you might retry a url job, so a retry never spends a second video (an upload can only be started once anyway). Fails if the URL is unsupported, the uploaded file is missing, or the video is longer than your plan allows.",
+  katto_create_clip_job: "Submit a long video for clipping, either by public link in url (YouTube, Twitch, Kick, Vimeo, Zoom, Google Drive, Dropbox, Loom, LinkedIn, Facebook, Rumble, Dailymotion, Medal.tv, or a direct https link to a video file; Google Drive and Dropbox links must be shared publicly) or, for a local file, by upload_id after katto_upload_video and the PUT of the file. Pass exactly one of url or upload_id. Consumes 1 video from your monthly quota — check katto_get_usage first. Clips are produced asynchronously; returns a job id, then poll katto_get_job every 30-60 s until status is 'completed', or pass webhook_url to be notified (url jobs only). Pass idempotency_key when you might retry a url job, so a retry never spends a second video (an upload can only be started once anyway). Fails if the URL is unsupported, the uploaded file is missing, or the video is longer than your plan allows. Full reference: https://katto.tech/mcp/tools",
   katto_get_job: "Read-only. Get the status, progress and clips of a job by id. Clips come ranked by virality score (0-100, highest first; ties broken by clip_index). Each clip is { url, captions_url, title, score, clip_index, hd }: when status is 'completed' every url is a finished, downloadable clip; hd is true once the 1080p high-quality render is ready. hd=false does NOT mean broken — the url already works, the 1080p is just still rendering in the background (and stays the standard render on the free plan). The job-level hd_ready flag turns true once every clip is hd, i.e. the URLs are final and won't be swapped again (status='completed' fires earlier). Returns 404 for an unknown id.",
   katto_list_jobs: "Read-only. List your recent jobs, newest first. Paginate with 'cursor' (pass the previous next_cursor); optional 'status' filter. Returns { jobs: [{id, status, source, created_at, completed_at}], next_cursor }.",
   katto_get_clips: "Read-only convenience: the clips of a job as { url, captions_url, title, score, clip_index, hd }, ranked by score (highest first). hd=true means the 1080p render is ready; hd=false means the url is the standard render (HD still finishing, or the free plan). Empty until the first clip is ready.",
@@ -496,7 +499,7 @@ const DESCRIPTIONS = {
   katto_list_clip_lengths: "Read-only. The valid values for the optional config.clipLength on katto_create_clip_job (target clip-duration buckets). Note: clipLength is fixed at creation and cannot be changed by re-render.",
   katto_list_caption_styles: "Read-only. The valid caption_style preset names for katto_rerender_clip (id + label), e.g. 'hormozi' for bold word-by-word highlight. Call this before re-rendering so you pass a real preset instead of guessing.",
   katto_rerender_clip: "Re-render one already-finished clip with a new reframe layout and/or caption style (get valid caption_style values from katto_list_caption_styles). Free — does NOT use video quota. Each call starts a new render (not idempotent); the original clip is kept. Returns a rerender_id; poll katto_get_rerender for the new clip url.",
-  katto_dub_clip: "Re-render one finished clip dubbed into one or more of 19 languages (en, es, fr, it, pt, hi, ja, zh, de, ko, nl, pl, ru, tr, id, vi, th, uk, ar). Creator feature (requires an active subscription); does NOT use your monthly video quota. Each call starts a new render (not idempotent). Returns a rerender_id; poll katto_get_rerender for the result.",
+  katto_dub_clip: "Re-render one finished clip dubbed into one or more of 105 languages (ISO 639-1 codes such as en, es, fr, pt, hi, bn, ta, te, ur, ja, zh, ko, ar, sw; 86 of them in beta). Creator feature (requires an active subscription); does NOT use your monthly video quota. Each call starts a new render (not idempotent). Returns a rerender_id; poll katto_get_rerender for the result.",
   katto_get_rerender: "Read-only. Poll a re-render started by katto_rerender_clip or katto_dub_clip. Returns { status, clip_url, captions_url, dub_urls } — dub_urls is { lang: url } and is where a DUB lands (clip_url stays the undubbed re-render), null otherwise — clip_url is null until status is 'completed'.",
   katto_get_brand_kit: "Read-only. Your saved brand kits (colors, caption font and position, default layout, watermark url).",
   katto_get_webhook_secret: "Read-only. Returns your webhook signing SECRET — treat it as a credential (do not display or log it) — plus how to verify Katto's signed completion callbacks (HMAC-SHA256 of {timestamp}.{body}). Pass webhook_url on a job to receive them.",
@@ -615,7 +618,7 @@ function hookBody(args) {
   return b;
 }
 
-const server = new Server({ name: "katto", version: "0.6.1" }, { capabilities: { tools: {} }, instructions: SERVER_INSTRUCTIONS });
+const server = new Server({ name: "katto", version: "0.6.2" }, { capabilities: { tools: {} }, instructions: SERVER_INSTRUCTIONS });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS_LISTED }));
 

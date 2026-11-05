@@ -5,6 +5,18 @@ All notable changes to `katto-mcp` are documented here. This project follows
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-11-05
+### Changed
+- README: ChatGPT setup now follows OpenAI's current flow (chatgpt.com/plugins,
+  + > Add custom MCP server, then `@Katto` in a new chat).
+- README: listed on mcpservers.org.
+- `katto_dub_clip`: descriptions now state the 105 dubbing languages
+  (86 in beta) instead of the old list of 19.
+- `katto_retitle_clip` is annotated `destructiveHint: true` (it overwrites the
+  clip's title), matching the hosted server.
+- Requests carry `X-Katto-Client: mcp` so jobs created from the MCP server are
+  attributed to it. Same 29 tools, no input schema changes.
+
 ## [0.6.1] - 2026-10-19
 ### Changed
 - Releases are now published from GitHub Actions with npm provenance

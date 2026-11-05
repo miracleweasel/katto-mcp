@@ -31,8 +31,8 @@ Local files: `katto_upload_video` → PUT the file → `katto_create_clip_job({ 
 
 ## Editing — never counts against quota
 - `katto_rerender_clip({ id, clip_index, layout_mode?, caption_style? })`, then `katto_get_rerender(...)`.
-- `katto_dub_clip({ id, clip_index, languages })` → dub into any of **19 languages**: en, es, fr, it, pt, hi, ja, zh, de, ko, nl, pl, ru, tr, id, vi, th, uk, ar.
-- `katto_translate_captions({ id, clip_index, language })` → same 19 languages, captions only (Creator).
+- `katto_dub_clip({ id, clip_index, languages })` → dub into any of **105 languages** (ISO 639-1 codes, e.g. en, es, fr, pt, hi, bn, ta, ja, zh, ko, ar, sw; 86 of them in beta).
+- `katto_translate_captions({ id, clip_index, language })` → 19 languages, captions only (Creator).
 - `katto_retitle_clip({ id, clip_index, style? })` → new AI title (monthly allowance), or `{ title }` to set one.
 - `katto_adjust_clip({ id, clip_index, start_offset_seconds?, end_offset_seconds? })` → trim (negative) or extend
   (positive) relative to the clip's original bounds, 3–180 s; extending only within 7 days of the job. Poll `katto_get_rerender`.
@@ -56,7 +56,7 @@ Local files: `katto_upload_video` → PUT the file → `katto_create_clip_job({ 
 - **One quota**, shared with the app and the API: Free = 2 videos/month (≤30 min each),
   Solo = 10 (≤60 min), Creator = 25 (≤90 min). Re-renders are free; dubbing is Creator only.
 - If a call fails on quota, tell the user and give them the upgrade link included in the error.
-- Captions: **99 languages** (word-timed in 41, sentence-level in the rest). Dubbing: **19**.
+- Captions: **99 languages** (word-timed in 41, sentence-level in the rest). Dubbing: **105**.
 - **Don't invent timings.** The only measured figure is ~5 minutes for 8 clips on a 20-minute video;
   longer sources take longer. Say that, not a number you'd like.
 
