@@ -114,7 +114,7 @@ Account and reference:
 - **`katto_list_clip_lengths()`** the valid target clip-length buckets.
 - **`katto_list_caption_styles()`** the caption-style presets you can pass as `caption_style` when creating a job or re-rendering a clip.
 
-Jobs draw from your Katto plan's monthly video quota (25 on Creator, 10 on Solo, 2 on Free), with source videos up to 90, 60 and 30 minutes respectively. The underlying REST API also supports `Idempotency-Key` safe retries, read-only scoped keys, and signed HMAC webhooks. See the [docs](https://katto.tech/docs/api).
+Jobs draw from your Katto plan's monthly video quota (25 on Creator, 10 on Solo, 2 on Free), with source videos up to 90 minutes on Creator and Solo and 30 on Free. The underlying REST API also supports `Idempotency-Key` safe retries, read-only scoped keys, and signed HMAC webhooks. See the [docs](https://katto.tech/docs/api).
 
 ## Env
 
