@@ -7,7 +7,7 @@
 
 **The AI video clipping MCP server.** Turn long videos into scored, captioned, vertical 9:16 short clips from any MCP client (Claude, Cursor, Claude Code, ChatGPT, VS Code, and other conformant clients). Drop in a YouTube link, a podcast, or a Twitch VOD and get publish-ready shorts back through natural conversation.
 
-Powered by [Katto](https://katto.tech), an AI video clipper that turns long-form video (podcasts, interviews, streams, webinars) into short-form clips for TikTok, Reels and YouTube Shorts. Katto is a flat-priced, no-credits alternative to tools like OpusClip: the Creator plan's 25-video monthly quota covers videos up to 90 minutes each. API and MCP access is included on **every plan, including the free one** (1 video/month), not gated behind a paid or enterprise tier.
+Powered by [Katto](https://katto.tech), an AI video clipper that turns long-form video (podcasts, interviews, streams, webinars) into short-form clips for TikTok, Reels and YouTube Shorts. Katto is a flat-priced, no-credits alternative to tools like OpusClip: the Creator plan's 25-video monthly quota covers videos up to 10 hours each (every 2 hours counts as 1 video). API and MCP access is included on **every plan, including the free one** (1 video/month), not gated behind a paid or enterprise tier.
 
 ## What it does
 
@@ -114,7 +114,7 @@ Account and reference:
 - **`katto_list_clip_lengths()`** the valid target clip-length buckets.
 - **`katto_list_caption_styles()`** the caption-style presets you can pass as `caption_style` when creating a job or re-rendering a clip.
 
-Jobs draw from your Katto plan's monthly video quota (25 on Creator, 10 on Solo, 1 on Free), with source videos and lives up to 10 hours on Creator and Solo (every 90 minutes counts as 1 video) and 30 minutes on Free (on a longer source, only the first 30 minutes are clipped). The underlying REST API also supports `Idempotency-Key` safe retries, read-only scoped keys, and signed HMAC webhooks. See the [docs](https://katto.tech/docs/api).
+Jobs draw from your Katto plan's monthly video quota (25 on Creator, 10 on Solo, 1 on Free), with source videos and lives up to 10 hours on Creator and Solo (every 2 hours counts as 1 video) and 30 minutes on Free (on a longer source, only the first 30 minutes are clipped). The underlying REST API also supports `Idempotency-Key` safe retries, read-only scoped keys, and signed HMAC webhooks. See the [docs](https://katto.tech/docs/api).
 
 ## Env
 
