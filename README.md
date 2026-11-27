@@ -90,7 +90,7 @@ Editing (no quota):
 - **`katto_rerender_clip(id, clip_index, layout_mode?, caption_style?)`** re-render one clip with a new reframe layout or caption style.
 - **`katto_dub_clip(id, clip_index, languages)`** re-render a clip dubbed into one or more of 105 languages.
 - **`katto_get_rerender(id, rerender_id)`** poll a re-render for the new versioned clip url.
-- **`katto_translate_captions(id, clip_index, language)`** re-render a clip with its captions translated into one of 19 languages (Creator).
+- **`katto_translate_captions(id, clip_index, language)`** re-render a clip with its captions translated into one of 31 languages (Creator).
 - **`katto_retitle_clip(id, clip_index, style? | title?)`** AI-regenerate a clip's title, or save your own.
 - **`katto_adjust_clip(id, clip_index, start_offset_seconds?, end_offset_seconds?)`** trim or extend a clip (relative to its original bounds, 3-180 s; extending works within 7 days of the job) and re-render it.
 - **`katto_add_hook(id, clip_index, text?, position?, duration?)`** burn a hook over the first seconds; without text, Katto's AI writes one.
